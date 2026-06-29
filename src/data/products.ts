@@ -144,6 +144,7 @@ export const products: Product[] = [
     reviewCount: 178,
     description: "11-piece set with stackable bands up to 150lbs, handles, ankle straps, and carry bag.",
     inStock: true,
+    trending: true,
     createdAt: "2025-02-18",
   },
   {
@@ -158,6 +159,7 @@ export const products: Product[] = [
     reviewCount: 92,
     description: "Soft, blackout sleep mask with built-in flat speakers for music and meditation.",
     inStock: true,
+    trending: true,
     createdAt: "2025-05-02",
   },
   {
@@ -172,6 +174,7 @@ export const products: Product[] = [
     reviewCount: 612,
     description: "Keeps drinks cold 24h, hot 12h. Leak-proof, BPA-free, in six modern finishes.",
     inStock: true,
+    trending: true,
     variants: [{ name: "Color", options: ["Matte Black", "Sand", "Forest", "Cream"] }],
     createdAt: "2025-01-20",
   },
@@ -187,6 +190,7 @@ export const products: Product[] = [
     reviewCount: 144,
     description: "6-pack of premium mulberry silk scrunchies — gentle on hair, gorgeous on you.",
     inStock: true,
+    trending: true,
     createdAt: "2025-06-15",
   },
   {
@@ -244,6 +248,7 @@ export const products: Product[] = [
     reviewCount: 411,
     description: "Voice-controlled smart plugs with app scheduling. Works with Alexa & Google.",
     inStock: true,
+    trending: true,
     createdAt: "2025-05-20",
   },
   {

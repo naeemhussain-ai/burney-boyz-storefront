@@ -1,5 +1,19 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, Truck, ShieldCheck, RefreshCw, Headphones, Star } from "lucide-react";
+import {
+  ArrowRight,
+  Truck,
+  ShieldCheck,
+  RefreshCw,
+  Headphones,
+  Star,
+  Zap,
+  TrendingUp,
+  Award,
+  Package,
+  ChevronRight,
+  BadgePercent,
+  Globe,
+} from "lucide-react";
 import { products } from "@/data/products";
 import { categories } from "@/data/categories";
 import { ProductCard } from "@/components/shop/ProductCard";
@@ -29,90 +43,245 @@ export const Route = createFileRoute("/")({
 });
 
 const valueProps = [
-  { icon: Truck, title: "Fast Worldwide Shipping", desc: "Free over $50, tracked to your door." },
-  { icon: ShieldCheck, title: "Secure Checkout", desc: "256-bit encrypted, trusted by thousands." },
-  { icon: RefreshCw, title: "Easy 30-Day Returns", desc: "Don't love it? Send it back, no fuss." },
-  { icon: Headphones, title: "24/7 Customer Support", desc: "We're here whenever you need us." },
+  {
+    icon: Truck,
+    title: "Fast Worldwide Shipping",
+    desc: "Free shipping on orders over $50. Tracked delivery to your door.",
+    color: "bg-blue-50 text-blue-600",
+  },
+  {
+    icon: ShieldCheck,
+    title: "Secure Checkout",
+    desc: "256-bit encryption. Your payment info is always safe with us.",
+    color: "bg-green-50 text-green-600",
+  },
+  {
+    icon: RefreshCw,
+    title: "Easy 30-Day Returns",
+    desc: "Not happy? Send it back hassle-free within 30 days.",
+    color: "bg-purple-50 text-purple-600",
+  },
+  {
+    icon: Headphones,
+    title: "24/7 Customer Support",
+    desc: "Real humans ready to help whenever you need us.",
+    color: "bg-orange-50 text-orange-600",
+  },
 ];
 
 const testimonials = [
-  { name: "Amara K.", quote: "Loved everything about my order — fast shipping and the quality is real.", rating: 5 },
-  { name: "Jordan P.", quote: "Burney Boyz is my new go-to for gifts. The packaging alone is *chef's kiss*.", rating: 5 },
-  { name: "Riley M.", quote: "Customer service actually replied within an hour. So rare these days.", rating: 5 },
+  {
+    name: "Amara K.",
+    location: "New York, USA",
+    quote:
+      "Loved everything about my order — super fast shipping and the quality is even better than I expected. Will definitely be ordering again!",
+    rating: 5,
+    product: "Wireless Earbuds Pro",
+    avatar: "AK",
+  },
+  {
+    name: "Jordan P.",
+    location: "London, UK",
+    quote:
+      "Burney Boyz is my new go-to for gifts. The packaging alone is *chef's kiss*. My friend was absolutely blown away when she opened it.",
+    rating: 5,
+    product: "Galaxy Star Projector",
+    avatar: "JP",
+  },
+  {
+    name: "Riley M.",
+    location: "Sydney, AU",
+    quote:
+      "Customer service actually replied within an hour. So rare these days. The team really cares about their customers — incredible experience.",
+    rating: 5,
+    product: "Smart Fitness Tracker",
+    avatar: "RM",
+  },
+];
+
+const tickerItems = [
+  "Free shipping on orders $50+",
+  "New drops every week",
+  "30-day easy returns",
+  "Trusted by 12,000+ customers",
+  "Secure & encrypted checkout",
+  "Ships to 60+ countries",
+];
+
+const stats = [
+  { label: "Happy Customers", value: "12,000+", icon: TrendingUp },
+  { label: "Products Curated", value: "500+", icon: Award },
+  { label: "Countries Served", value: "60+", icon: Globe },
+  { label: "Average Rating", value: "4.8★", icon: Star },
 ];
 
 function Home() {
-  const trending = products.filter((p) => p.trending).slice(0, 8);
+  const trending = products.filter((p) => p.trending).slice(0, 12);
+  const newArrivals = products.slice(0, 4);
+  const featuredDeal = products.find((p) => p.compareAtPrice) ?? products[0];
 
   return (
     <>
-      {/* Hero */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-primary-soft via-background to-background">
-        <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 py-16 sm:px-6 lg:grid-cols-2 lg:px-8 lg:py-24">
-          <div>
-            <span className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-              <span className="h-1.5 w-1.5 rounded-full bg-primary" /> New drops weekly
+      {/* Announcement ticker */}
+      <div className="overflow-hidden bg-secondary py-2.5 text-secondary-foreground">
+        <div className="flex animate-marquee gap-0 whitespace-nowrap">
+          {[...tickerItems, ...tickerItems].map((item, i) => (
+            <span key={i} className="inline-flex items-center gap-2 px-6 text-xs font-medium">
+              <span className="h-1 w-1 rounded-full bg-primary" />
+              {item}
             </span>
-            <h1 className="mt-5 text-4xl font-extrabold leading-tight tracking-tight md:text-6xl">
-              Trending products,
-              <span className="block text-primary">delivered worldwide.</span>
+          ))}
+        </div>
+      </div>
+
+      {/* Hero */}
+      <section className="relative overflow-hidden">
+        {/* Background gradient */}
+        <div className="absolute inset-0 bg-gradient-to-br from-primary-soft via-background to-background" />
+        <div className="absolute right-0 top-0 h-[600px] w-[600px] rounded-full bg-primary/5 blur-3xl" />
+        <div className="absolute -left-20 bottom-0 h-[400px] w-[400px] rounded-full bg-primary/8 blur-3xl" />
+
+        <div className="relative mx-auto grid max-w-7xl items-center gap-12 px-4 py-20 sm:px-6 lg:grid-cols-2 lg:px-8 lg:py-28">
+          {/* Left — copy */}
+          <div>
+            <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 py-1.5 text-xs font-semibold text-primary">
+              <Zap className="h-3.5 w-3.5 fill-primary" />
+              New drops every week
+            </div>
+
+            <h1 className="mt-6 text-5xl font-extrabold leading-[1.08] tracking-tight md:text-7xl">
+              Trending
+              <br />
+              products,
+              <br />
+              <span className="text-primary">delivered</span>
+              <span className="text-muted-foreground/40">.</span>
             </h1>
-            <p className="mt-5 max-w-xl text-lg text-muted-foreground">
-              From clever gadgets to everyday essentials — Burney Boyz curates the items
-              everyone's talking about, so you don't have to scroll for hours.
+
+            <p className="mt-6 max-w-lg text-lg leading-relaxed text-muted-foreground">
+              Burney Boyz hand-picks the gadgets, goods, and gear everyone's talking about —
+              so you can skip the scroll and shop the best, right now.
             </p>
+
             <div className="mt-8 flex flex-wrap gap-3">
-              <Button asChild size="lg" className="rounded-full">
+              <Button asChild size="lg" className="rounded-full px-8 shadow-glow">
                 <Link to="/shop">
                   Shop Now <ArrowRight className="h-4 w-4" />
                 </Link>
               </Button>
-              <Button asChild size="lg" variant="outline" className="rounded-full">
+              <Button asChild size="lg" variant="outline" className="rounded-full px-8">
                 <Link to="/categories">Browse Categories</Link>
               </Button>
             </div>
-            <div className="mt-8 flex items-center gap-5 text-sm text-muted-foreground">
-              <div className="flex items-center gap-1">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="h-4 w-4 fill-primary text-primary" />
+
+            {/* Social proof */}
+            <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-6">
+              <div className="flex -space-x-2">
+                {["AK", "JP", "RM", "TL", "SW"].map((initials, i) => (
+                  <div
+                    key={i}
+                    className="grid h-9 w-9 place-items-center rounded-full border-2 border-background bg-gradient-to-br from-primary to-primary/60 text-[10px] font-bold text-white shadow-sm"
+                  >
+                    {initials}
+                  </div>
                 ))}
               </div>
-              <span>
-                <strong className="text-foreground">4.8/5</strong> from 2,400+ happy customers
-              </span>
+              <div>
+                <div className="flex items-center gap-1">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="h-4 w-4 fill-primary text-primary" />
+                  ))}
+                </div>
+                <p className="mt-0.5 text-sm text-muted-foreground">
+                  <span className="font-semibold text-foreground">4.8/5</span> from 2,400+ reviews
+                </p>
+              </div>
             </div>
           </div>
-          <div className="relative">
+
+          {/* Right — product mosaic */}
+          <div className="relative hidden lg:block">
             <div className="grid grid-cols-2 gap-4">
               {trending.slice(0, 4).map((p, i) => (
-                <div
+                <Link
                   key={p.id}
-                  className={`overflow-hidden rounded-2xl bg-card shadow-card ${i % 2 ? "translate-y-6" : ""}`}
+                  to="/product/$id"
+                  params={{ id: p.id }}
+                  className={`group overflow-hidden rounded-2xl bg-card shadow-card transition hover:shadow-soft ${
+                    i % 2 ? "translate-y-6" : ""
+                  }`}
                 >
-                  <img src={p.image} alt={p.name} className="aspect-square w-full object-cover" />
-                </div>
+                  <div className="relative aspect-square overflow-hidden">
+                    <img
+                      src={p.image}
+                      alt={p.name}
+                      className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                    />
+                    {p.compareAtPrice && (
+                      <span className="absolute left-2 top-2 rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-white">
+                        SALE
+                      </span>
+                    )}
+                  </div>
+                  <div className="p-3">
+                    <p className="truncate text-xs font-medium">{p.name}</p>
+                    <p className="mt-0.5 text-sm font-bold text-primary">${p.price.toFixed(2)}</p>
+                  </div>
+                </Link>
               ))}
             </div>
-            <div className="absolute -bottom-6 -left-6 hidden rounded-2xl bg-card p-4 shadow-card lg:block">
-              <p className="text-xs text-muted-foreground">This week</p>
-              <p className="text-2xl font-bold">+2,140 orders</p>
+
+            {/* Floating stat card */}
+            <div className="absolute -bottom-4 -left-8 rounded-2xl border bg-card p-4 shadow-soft">
+              <p className="text-xs font-medium text-muted-foreground">Orders this week</p>
+              <p className="mt-0.5 text-2xl font-extrabold">+2,140</p>
+              <div className="mt-1 flex items-center gap-1 text-xs text-green-600">
+                <TrendingUp className="h-3 w-3" /> 23% vs last week
+              </div>
+            </div>
+
+            {/* Floating badge */}
+            <div className="absolute -right-4 top-4 rounded-2xl border bg-card p-3 shadow-soft">
+              <Package className="h-5 w-5 text-primary" />
+              <p className="mt-1 text-xs font-semibold">Fast Delivery</p>
+              <p className="text-[10px] text-muted-foreground">3-7 business days</p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Trending */}
-      <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-        <div className="mb-8 flex items-end justify-between">
+      {/* Stats bar */}
+      <section className="border-y bg-card">
+        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
+            {stats.map((s) => (
+              <div key={s.label} className="flex items-center gap-4">
+                <div className="grid h-12 w-12 flex-shrink-0 place-items-center rounded-xl bg-primary-soft text-primary">
+                  <s.icon className="h-5 w-5" />
+                </div>
+                <div>
+                  <p className="text-2xl font-extrabold">{s.value}</p>
+                  <p className="text-xs text-muted-foreground">{s.label}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Trending products */}
+      <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
+        <div className="mb-10 flex items-end justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-widest text-primary">
-              Trending now
-            </p>
-            <h2 className="mt-1 text-3xl font-bold md:text-4xl">Hot picks this week</h2>
+            <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+              <TrendingUp className="h-3.5 w-3.5" /> Trending now
+            </div>
+            <h2 className="mt-3 text-3xl font-bold md:text-4xl">Hot picks this week</h2>
+            <p className="mt-2 text-muted-foreground">The products everyone's buying right now</p>
           </div>
           <Button asChild variant="ghost" className="hidden sm:inline-flex">
             <Link to="/shop">
-              View all <ArrowRight className="h-4 w-4" />
+              View all <ChevronRight className="h-4 w-4" />
             </Link>
           </Button>
         </div>
@@ -121,34 +290,93 @@ function Home() {
             <ProductCard key={p.id} product={p} />
           ))}
         </div>
+        <div className="mt-8 text-center sm:hidden">
+          <Button asChild variant="outline" className="rounded-full">
+            <Link to="/shop">View all products <ArrowRight className="h-4 w-4" /></Link>
+          </Button>
+        </div>
       </section>
 
+      {/* Featured Deal banner */}
+      {featuredDeal.compareAtPrice && (
+        <section className="bg-secondary py-16 text-secondary-foreground">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="flex flex-col items-center gap-8 md:flex-row md:justify-between">
+              <div>
+                <div className="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-1.5 text-xs font-bold text-white">
+                  <BadgePercent className="h-3.5 w-3.5" /> Limited Time Deal
+                </div>
+                <h2 className="mt-4 text-3xl font-extrabold md:text-4xl">
+                  {featuredDeal.name}
+                </h2>
+                <p className="mt-2 max-w-lg text-secondary-foreground/75">
+                  {featuredDeal.description.slice(0, 120)}...
+                </p>
+                <div className="mt-4 flex items-baseline gap-3">
+                  <span className="text-4xl font-extrabold text-primary">
+                    ${featuredDeal.price.toFixed(2)}
+                  </span>
+                  <span className="text-xl text-secondary-foreground/50 line-through">
+                    ${featuredDeal.compareAtPrice.toFixed(2)}
+                  </span>
+                  <span className="rounded-full bg-green-500 px-3 py-1 text-sm font-bold text-white">
+                    Save ${(featuredDeal.compareAtPrice - featuredDeal.price).toFixed(2)}
+                  </span>
+                </div>
+                <Button asChild size="lg" className="mt-6 rounded-full">
+                  <Link to="/product/$id" params={{ id: featuredDeal.id }}>
+                    Grab This Deal <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
+              </div>
+              <div className="relative w-full max-w-xs flex-shrink-0">
+                <div className="overflow-hidden rounded-3xl shadow-glow">
+                  <img
+                    src={featuredDeal.image}
+                    alt={featuredDeal.name}
+                    className="aspect-square w-full object-cover"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Categories */}
-      <section className="bg-muted/40 py-16">
+      <section className="py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="mb-8 text-center">
-            <p className="text-xs font-semibold uppercase tracking-widest text-primary">
+          <div className="mb-10 text-center">
+            <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
               Shop by category
+            </div>
+            <h2 className="mt-3 text-3xl font-bold md:text-4xl">Find what you love</h2>
+            <p className="mt-2 text-muted-foreground">
+              Explore our hand-picked collections across 6 categories
             </p>
-            <h2 className="mt-1 text-3xl font-bold md:text-4xl">Find what you love</h2>
           </div>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {categories.map((c) => (
+            {categories.map((c, i) => (
               <Link
                 key={c.slug}
                 to="/category/$slug"
                 params={{ slug: c.slug }}
-                className="group relative overflow-hidden rounded-2xl shadow-card"
+                className={`group relative overflow-hidden rounded-3xl shadow-card ${
+                  i === 0 ? "sm:col-span-2 lg:col-span-1" : ""
+                }`}
               >
                 <img
                   src={c.image}
                   alt={c.name}
-                  className="aspect-[5/3] w-full object-cover transition duration-500 group-hover:scale-105"
+                  className="aspect-[4/3] w-full object-cover transition duration-700 group-hover:scale-110"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-                <div className="absolute inset-x-0 bottom-0 p-5 text-white">
-                  <h3 className="text-xl font-bold">{c.name}</h3>
-                  <p className="mt-1 text-sm opacity-90">{c.description}</p>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+                <div className="absolute inset-x-0 bottom-0 p-6 text-white">
+                  <h3 className="text-xl font-extrabold tracking-tight">{c.name}</h3>
+                  <p className="mt-1 text-sm text-white/75">{c.description}</p>
+                  <span className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-primary">
+                    Shop now <ChevronRight className="h-3.5 w-3.5" />
+                  </span>
                 </div>
               </Link>
             ))}
@@ -156,40 +384,91 @@ function Home() {
         </div>
       </section>
 
-      {/* Value props */}
-      <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          {valueProps.map((v) => (
-            <div key={v.title} className="rounded-2xl border bg-card p-6 shadow-card">
-              <div className="grid h-12 w-12 place-items-center rounded-xl bg-primary-soft text-primary">
-                <v.icon className="h-6 w-6" />
+      {/* New Arrivals */}
+      <section className="bg-muted/30 py-20">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="mb-10 flex items-end justify-between">
+            <div>
+              <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+                <Zap className="h-3.5 w-3.5 fill-primary" /> Just landed
               </div>
-              <h3 className="mt-4 font-semibold">{v.title}</h3>
-              <p className="mt-1 text-sm text-muted-foreground">{v.desc}</p>
+              <h2 className="mt-3 text-3xl font-bold md:text-4xl">New Arrivals</h2>
+              <p className="mt-2 text-muted-foreground">Fresh picks added to the collection</p>
+            </div>
+            <Button asChild variant="ghost" className="hidden sm:inline-flex">
+              <Link to="/shop">
+                See all <ChevronRight className="h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+            {newArrivals.map((p) => (
+              <ProductCard key={p.id} product={p} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Value props */}
+      <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
+        <div className="mb-10 text-center">
+          <h2 className="text-3xl font-bold md:text-4xl">Why shop with us?</h2>
+          <p className="mt-3 text-muted-foreground">
+            We make it easy to get the products you love, delivered with confidence
+          </p>
+        </div>
+        <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
+          {valueProps.map((v) => (
+            <div
+              key={v.title}
+              className="group rounded-3xl border bg-card p-7 shadow-card transition hover:-translate-y-1 hover:shadow-soft"
+            >
+              <div className={`grid h-14 w-14 place-items-center rounded-2xl ${v.color}`}>
+                <v.icon className="h-7 w-7" />
+              </div>
+              <h3 className="mt-5 text-base font-bold">{v.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{v.desc}</p>
             </div>
           ))}
         </div>
       </section>
 
       {/* Testimonials */}
-      <section className="bg-muted/40 py-16">
+      <section className="bg-muted/30 py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="mb-10 text-center">
-            <p className="text-xs font-semibold uppercase tracking-widest text-primary">Reviews</p>
-            <h2 className="mt-1 text-3xl font-bold md:text-4xl">Loved by thousands</h2>
+          <div className="mb-12 text-center">
+            <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+              <Star className="h-3.5 w-3.5 fill-primary" /> Customer reviews
+            </div>
+            <h2 className="mt-3 text-3xl font-bold md:text-4xl">Loved by thousands</h2>
+            <p className="mt-2 text-muted-foreground">
+              Real reviews from real customers across the globe
+            </p>
           </div>
           <div className="grid gap-5 md:grid-cols-3">
             {testimonials.map((t) => (
-              <figure key={t.name} className="rounded-2xl border bg-card p-6 shadow-card">
-                <div className="mb-3 flex">
+              <figure
+                key={t.name}
+                className="flex flex-col rounded-3xl border bg-card p-7 shadow-card transition hover:-translate-y-1 hover:shadow-soft"
+              >
+                <div className="mb-4 flex">
                   {[...Array(t.rating)].map((_, i) => (
                     <Star key={i} className="h-4 w-4 fill-primary text-primary" />
                   ))}
                 </div>
-                <blockquote className="text-foreground">"{t.quote}"</blockquote>
-                <figcaption className="mt-4 text-sm font-medium text-muted-foreground">
-                  — {t.name}
-                </figcaption>
+                <blockquote className="flex-1 text-sm leading-relaxed text-foreground">
+                  "{t.quote}"
+                </blockquote>
+                <div className="mt-6 flex items-center gap-3 border-t pt-5">
+                  <div className="grid h-10 w-10 flex-shrink-0 place-items-center rounded-full bg-gradient-to-br from-primary to-primary/60 text-xs font-bold text-white">
+                    {t.avatar}
+                  </div>
+                  <div>
+                    <figcaption className="text-sm font-semibold">{t.name}</figcaption>
+                    <p className="text-xs text-muted-foreground">{t.location}</p>
+                    <p className="text-xs text-primary">Purchased: {t.product}</p>
+                  </div>
+                </div>
               </figure>
             ))}
           </div>
@@ -197,30 +476,55 @@ function Home() {
       </section>
 
       {/* Newsletter CTA */}
-      <section className="mx-auto max-w-5xl px-4 py-16 sm:px-6 lg:px-8">
-        <div className="relative overflow-hidden rounded-3xl bg-secondary p-8 text-secondary-foreground md:p-14">
-          <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-primary/30 blur-3xl" />
-          <div className="relative">
-            <h2 className="text-3xl font-bold md:text-4xl">Get 10% off your first order</h2>
-            <p className="mt-3 max-w-xl text-secondary-foreground/80">
-              Join the newsletter for early drops, exclusive deals, and a welcome discount.
-            </p>
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                (e.currentTarget as HTMLFormElement).reset();
-                toast.success("You're in!", { description: "Check your inbox for your code." });
-              }}
-              className="mt-6 flex max-w-md flex-col gap-3 sm:flex-row"
-            >
-              <Input
-                type="email"
-                required
-                placeholder="you@email.com"
-                className="border-white/20 bg-white/10 text-secondary-foreground placeholder:text-secondary-foreground/60"
-              />
-              <Button type="submit" size="lg">Subscribe</Button>
-            </form>
+      <section className="mx-auto max-w-6xl px-4 py-20 sm:px-6 lg:px-8">
+        <div className="relative overflow-hidden rounded-3xl bg-secondary p-10 text-secondary-foreground md:p-16">
+          {/* Decorative blobs */}
+          <div className="absolute -right-24 -top-24 h-80 w-80 rounded-full bg-primary/25 blur-3xl" />
+          <div className="absolute -bottom-12 -left-12 h-64 w-64 rounded-full bg-primary/15 blur-3xl" />
+
+          <div className="relative grid gap-8 md:grid-cols-2 md:items-center">
+            <div>
+              <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-xs font-semibold">
+                <BadgePercent className="h-3.5 w-3.5 text-primary" /> Exclusive offer
+              </div>
+              <h2 className="mt-4 text-3xl font-extrabold md:text-4xl">
+                Get 10% off your first order
+              </h2>
+              <p className="mt-3 text-secondary-foreground/75">
+                Join the Burney Boyz newsletter and get early access to new drops, exclusive member
+                discounts, and a welcome code in your inbox.
+              </p>
+              <ul className="mt-4 space-y-1.5 text-sm text-secondary-foreground/75">
+                {["Early access to new arrivals", "Exclusive member-only deals", "No spam, unsubscribe anytime"].map((item) => (
+                  <li key={item} className="flex items-center gap-2">
+                    <ShieldCheck className="h-4 w-4 text-primary" /> {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  (e.currentTarget as HTMLFormElement).reset();
+                  toast.success("You're in!", { description: "Check your inbox for your 10% off code." });
+                }}
+                className="flex flex-col gap-3"
+              >
+                <Input
+                  type="email"
+                  required
+                  placeholder="Enter your email address"
+                  className="h-13 border-white/20 bg-white/10 text-secondary-foreground placeholder:text-secondary-foreground/50 focus-visible:ring-primary"
+                />
+                <Button type="submit" size="lg" className="w-full rounded-xl">
+                  Subscribe & Get 10% Off
+                </Button>
+                <p className="text-center text-xs text-secondary-foreground/50">
+                  By subscribing you agree to our Privacy Policy. Unsubscribe anytime.
+                </p>
+              </form>
+            </div>
           </div>
         </div>
       </section>

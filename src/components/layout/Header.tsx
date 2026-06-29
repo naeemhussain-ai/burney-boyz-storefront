@@ -42,19 +42,20 @@ export function Header() {
     const q = query.trim();
     navigate({ to: "/shop", search: q ? { q } : {} });
     setSearchOpen(false);
+    setQuery("");
   };
 
   return (
     <header
       className={cn(
-        "sticky top-0 z-40 w-full border-b border-transparent bg-background/80 backdrop-blur transition-all",
+        "sticky top-0 z-40 w-full border-b border-transparent bg-background/80 backdrop-blur-lg transition-all duration-300",
         scrolled && "border-border shadow-soft",
       )}
     >
-      <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 sm:px-6 lg:h-20 lg:px-8">
-        <Logo className="h-10 w-auto lg:h-12" />
+      <div className="mx-auto flex h-20 max-w-7xl items-center gap-4 px-4 sm:px-6 lg:h-24 lg:px-8">
+        <Logo className="h-14 w-auto lg:h-16" />
 
-        <nav className="ml-6 hidden flex-1 items-center gap-1 lg:flex">
+        <nav className="ml-8 hidden flex-1 items-center gap-0.5 lg:flex">
           {nav.map((item) => {
             const active = item.to === "/" ? pathname === "/" : pathname.startsWith(item.to);
             return (
@@ -62,8 +63,10 @@ export function Header() {
                 key={item.to}
                 to={item.to}
                 className={cn(
-                  "rounded-full px-4 py-2 text-sm font-medium text-foreground/80 transition hover:bg-primary-soft hover:text-foreground",
-                  active && "bg-primary-soft text-foreground",
+                  "rounded-full px-4 py-2 text-sm font-medium transition-all duration-200 hover:bg-primary-soft hover:text-foreground",
+                  active
+                    ? "bg-primary-soft font-semibold text-foreground"
+                    : "text-foreground/70",
                 )}
               >
                 {item.label}
@@ -76,30 +79,32 @@ export function Header() {
           <Button
             variant="ghost"
             size="icon"
-            className="rounded-full"
+            className="rounded-full hover:bg-primary-soft"
             onClick={() => setSearchOpen((s) => !s)}
             aria-label="Toggle search"
           >
             {searchOpen ? <X className="h-5 w-5" /> : <Search className="h-5 w-5" />}
           </Button>
+
           <Button
             variant="ghost"
             size="icon"
-            className="relative rounded-full"
+            className="relative rounded-full hover:bg-primary-soft"
             onClick={openCart}
             aria-label="Open cart"
           >
             <ShoppingCart className="h-5 w-5" />
             {count > 0 && (
-              <span className="absolute -right-0.5 -top-0.5 grid h-5 min-w-5 place-items-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
+              <span className="absolute -right-0.5 -top-0.5 grid h-5 min-w-5 animate-bounce place-items-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground shadow-glow">
                 {count}
               </span>
             )}
           </Button>
+
           <Button
             variant="ghost"
             size="icon"
-            className="rounded-full lg:hidden"
+            className="rounded-full hover:bg-primary-soft lg:hidden"
             onClick={() => setMobileOpen((s) => !s)}
             aria-label="Toggle menu"
           >
@@ -108,39 +113,47 @@ export function Header() {
         </div>
       </div>
 
+      {/* Search bar */}
       {searchOpen && (
-        <div className="border-t bg-background">
+        <div className="border-t bg-background/95 backdrop-blur-lg">
           <form
             onSubmit={submitSearch}
-            className="mx-auto flex max-w-3xl items-center gap-2 px-4 py-3 sm:px-6"
+            className="mx-auto flex max-w-3xl items-center gap-3 px-4 py-3 sm:px-6"
           >
-            <Search className="h-4 w-4 text-muted-foreground" />
+            <Search className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
             <Input
               autoFocus
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search products..."
+              placeholder="Search for products..."
               className="border-0 shadow-none focus-visible:ring-0"
             />
-            <Button type="submit" size="sm">
+            <Button type="submit" size="sm" className="rounded-full">
               Search
             </Button>
           </form>
         </div>
       )}
 
+      {/* Mobile menu */}
       {mobileOpen && (
         <div className="border-t bg-background lg:hidden">
-          <nav className="mx-auto flex max-w-7xl flex-col p-4">
-            {nav.map((item) => (
-              <Link
-                key={item.to}
-                to={item.to}
-                className="rounded-lg px-3 py-3 text-sm font-medium hover:bg-primary-soft"
-              >
-                {item.label}
-              </Link>
-            ))}
+          <nav className="mx-auto flex max-w-7xl flex-col p-3">
+            {nav.map((item) => {
+              const active = item.to === "/" ? pathname === "/" : pathname.startsWith(item.to);
+              return (
+                <Link
+                  key={item.to}
+                  to={item.to}
+                  className={cn(
+                    "rounded-xl px-4 py-3 text-sm font-medium transition hover:bg-primary-soft",
+                    active && "bg-primary-soft font-semibold",
+                  )}
+                >
+                  {item.label}
+                </Link>
+              );
+            })}
           </nav>
         </div>
       )}

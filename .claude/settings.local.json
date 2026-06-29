@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -E '\\\\.\\(tsx|ts|css\\)$')",
+      "Bash(mkdir -p \"C:\\\\Users\\\\Administrator\\\\Desktop\\\\TechGenics\\\\burney-boyz-storefront/public\")",
+      "Bash(cp \"C:\\\\Users\\\\Administrator\\\\Desktop\\\\TechGenics\\\\burney-boyz-storefront/Burney Boyz - Logo Design-02.jpg\" \"C:\\\\Users\\\\Administrator\\\\Desktop\\\\TechGenics\\\\burney-boyz-storefront/public/logo.jpg\")",
+      "Bash(bun run *)",
+      "Bash(npm run *)",
+      "Bash(npm install *)",
+      "Bash(xargs head *)",
+      "Bash(xargs grep *)",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(d.get\\('exports',{}\\), indent=2\\)\\)\")",
+      "Bash(cp \"/c/Users/Administrator/AppData/Local/Temp/Burney Boyz - Logo Design - FF.png\" \"/c/Users/Administrator/Desktop/TechGenics/burney-boyz-storefront/public/logo.png\")",
+      "Bash(cp \"/c/Users/Administrator/AppData/Local/Temp/Burney-Boyz---Logo-Design---FF---Favicon.png\" \"/c/Users/Administrator/Desktop/TechGenics/burney-boyz-storefront/public/favicon.png\")"
+    ]
+  }
+}

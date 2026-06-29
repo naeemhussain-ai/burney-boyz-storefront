@@ -174,7 +174,7 @@ function Shop() {
 
         <div className="grid gap-8 lg:grid-cols-[240px_1fr]">
           <aside className="hidden lg:block">
-            <div className="sticky top-24">{FiltersInner}</div>
+            <div className="sticky top-28">{FiltersInner}</div>
           </aside>
 
           <div>
