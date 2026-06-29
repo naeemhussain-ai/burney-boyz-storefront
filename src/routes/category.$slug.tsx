@@ -39,7 +39,7 @@ export const Route = createFileRoute("/category/$slug")({
 });
 
 function CategoryPage() {
-  const { category } = Route.useLoaderData();
+  const { category } = Route.useLoaderData() as { category: (typeof categories)[number] };
   const [sort, setSort] = useState("featured");
 
   const items = useMemo(() => {
