@@ -1,7 +1,7 @@
 import { createFileRoute, notFound, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { Star, Minus, Plus, Truck, ShieldCheck, RefreshCw } from "lucide-react";
-import { getProductById, products } from "@/data/products";
+import { getProductById, products, type Product } from "@/data/products";
 import { categories } from "@/data/categories";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -38,7 +38,7 @@ export const Route = createFileRoute("/product/$id")({
 });
 
 function ProductPage() {
-  const { product } = Route.useLoaderData();
+  const { product } = Route.useLoaderData() as { product: Product };
   const [activeImg, setActiveImg] = useState(product.image);
   const [qty, setQty] = useState(1);
   const [variant, setVariant] = useState<string | undefined>(
