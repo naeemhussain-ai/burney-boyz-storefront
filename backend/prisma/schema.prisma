@@ -1,0 +1,427 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum ProductStatus {
+  draft
+  published
+}
+
+enum ReviewStatus {
+  pending
+  approved
+  rejected
+}
+
+// Only products we've deliberately chosen to import from CJ live here -
+// never a full CJ catalog sync.
+model Product {
+  id          String  @id @default(uuid())
+  cjProductId String  @unique
+  name        String
+  slug        String  @unique
+
+  description      String?
+  shortDescription String?
+  sku              String?
+
+  price        Decimal @db.Decimal(10, 2)
+  comparePrice Decimal? @db.Decimal(10, 2)
+  myPrice      Decimal @db.Decimal(10, 2)
+  shippingCost Decimal @default(0) @db.Decimal(10, 2)
+  currency     String  @default("USD")
+
+  categoryId   String?
+  categoryName String?
+  brand        String?
+
+  image  String?
+  images Json?
+  video  String?
+
+  // Raw CJ fields - grams; kept as strings since CJ sometimes returns a
+  // range (e.g. "1000.00-1120.00") rather than a single number.
+  weight          String?
+  packagingWeight String?
+  listedNum       Int?
+
+  // { logistics: string[], material: string[], packing: string[] }
+  attributes Json?
+  // { optionTypes: string[], customsCode: string|null, customsName: string|null }
+  specifications Json?
+
+  // Populated at import time via CJ's /logistic/freightCalculate, using the
+  // first variant as a representative item. { [destCountryCode]: [{ logisticName, price, priceCny, aging }] }
+  shippingMethods   Json?
+  // Destination country codes CJ actually returned a quote for.
+  shippingCountries Json?
+
+  status   ProductStatus @default(draft)
+  featured Boolean       @default(false)
+
+  // CJ's own product status (e.g. active/discontinued), distinct from the
+  // `status` draft/published enum above - that one is admin-owned and sync
+  // never touches it. This one is purely informational, sourced from CJ.
+  cjStatus String?
+
+  // Sprint 7 / Step 18 - CJ Auto Sync bookkeeping.
+  lastSyncedAt DateTime?
+  lastSyncStatus String? // 'success' | 'error'
+  lastSyncError  String?
+
+  // Sprint 8 - denormalized counters kept in sync by review.service.js
+  // (avgRating/reviewCount, recomputed on every review write) and
+  // order.service.js (salesCount, incremented on paid Stripe orders).
+  // Queried directly for "Highest Rated"/"Best Selling" sort - avoids a
+  // live aggregate join on every product-list request.
+  avgRating   Decimal @default(0) @db.Decimal(3, 2)
+  reviewCount Int     @default(0)
+  salesCount  Int     @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  variants   Variant[]
+  cartItems  CartItem[]
+  orderItems OrderItem[]
+  wishlists  Wishlist[]
+  reviews    Review[]
+
+  @@map("products")
+}
+
+// Sprint 8 / Step 20 - one row per (user, product); a product can only be
+// wishlisted once per user, enforced at the DB level.
+model Wishlist {
+  id String @id @default(uuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, productId])
+  @@index([userId])
+  @@map("wishlists")
+}
+
+// Sprint 8 / Step 20 - one review per (user, product). `verifiedPurchase` is
+// a snapshot taken at review-creation time (was this user's email on a
+// paid+ order containing this product then) - matches the existing
+// snapshot philosophy used for Order's address/pricing fields, so a review
+// doesn't silently gain/lose its badge if order history changes later.
+model Review {
+  id String @id @default(uuid())
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  rating Int // 1-5
+  title  String?
+  body   String?
+  images Json? // string[], optional
+
+  verifiedPurchase Boolean @default(false)
+
+  status ReviewStatus @default(pending)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, productId])
+  @@index([productId])
+  @@map("reviews")
+}
+
+model Variant {
+  id        String  @id @default(uuid())
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  cjVariantId String?
+  sku         String?
+  name        String?
+  barcode     String?
+  barcode2    String?
+  // Human-readable spec description CJ provides for this variant (e.g. size chart text).
+  standard    String?
+
+  option1 String?
+  option2 String?
+  option3 String?
+
+  price   Decimal? @db.Decimal(10, 2)
+  myPrice Decimal? @db.Decimal(10, 2)
+  stock   Int?
+  image   String?
+
+  // grams
+  weight Decimal? @db.Decimal(10, 2)
+  // mm
+  length Int?
+  width  Int?
+  height Int?
+
+  // Per-warehouse breakdown as reported by CJ: [{ countryCode, total, verified }].
+  // `stock` above is the sum of this array, kept as a fast-access column.
+  inventoryDetail Json?
+
+  createdAt DateTime @default(now())
+
+  cartItems  CartItem[]
+  orderItems OrderItem[]
+
+  @@index([productId])
+  @@map("variants")
+}
+
+// One cart per anonymous visitor, identified by an opaque token the
+// frontend generates and persists client-side (no auth system exists yet).
+model Cart {
+  id        String     @id @default(uuid())
+  token     String     @unique
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  items     CartItem[]
+
+  @@map("carts")
+}
+
+model CartItem {
+  id     String @id @default(uuid())
+  cartId String
+  cart   Cart   @relation(fields: [cartId], references: [id], onDelete: Cascade)
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  // Null when the product has no variants / a variant-less line item.
+  variantId String?
+  variant   Variant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
+
+  quantity Int @default(1)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Best-effort de-dupe at the DB level; Postgres treats NULL as distinct so
+  // this doesn't catch two variant-less rows for the same product - the
+  // service layer enforces that case explicitly before inserting.
+  @@unique([cartId, productId, variantId])
+  @@index([cartId])
+  @@map("cart_items")
+}
+
+enum OrderStatus {
+  pending // created, awaiting/using non-Stripe payment (e.g. manual/testing)
+  paid
+  processing
+  shipped
+  delivered
+  cancelled
+  refunded
+}
+
+// A completed checkout. Address/customer/pricing fields are snapshots taken
+// at order time - they must NOT change if the customer or product data
+// changes later, so this table deliberately duplicates data rather than
+// only storing foreign keys.
+model Order {
+  id          String      @id @default(uuid())
+  orderNumber String      @unique
+  status      OrderStatus @default(pending)
+
+  customerEmail String
+  customerPhone String?
+  customerName  String?
+
+  shippingFullName     String
+  shippingAddressLine1 String
+  shippingAddressLine2 String?
+  shippingCountry      String
+  shippingState        String
+  shippingCity         String
+  shippingPostalCode   String
+
+  billingFullName     String
+  billingAddressLine1 String
+  billingAddressLine2 String?
+  billingCountry      String
+  billingState        String
+  billingCity         String
+  billingPostalCode   String
+
+  shippingMethodId    String
+  shippingMethodLabel String
+  shippingCost        Decimal @db.Decimal(10, 2)
+
+  subtotal Decimal @db.Decimal(10, 2)
+  total    Decimal @db.Decimal(10, 2)
+  currency String  @default("USD")
+
+  couponCode String?
+
+  // Traceability back to the anonymous cart this order was placed from,
+  // and to the Stripe objects for the payment (both null for a manually
+  // created / non-Stripe order).
+  cartToken             String?
+  stripeSessionId       String?   @unique
+  stripePaymentIntentId String?
+  paidAt                DateTime?
+
+  // Sprint 7 / Step 19 - CJ Order Automation.
+  cjOrderId         String?
+  cjOrderStatus     String?
+  cjTrackingNumber  String?
+  cjShippingCarrier String?
+  cjLastSyncedAt    DateTime?
+  cjSyncError       String?
+
+  items OrderItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("orders")
+}
+
+// A registered customer account. Independent from Order/Cart - checkout
+// stays guest-friendly (Order.customerEmail), so a signed-in customer's
+// order history is matched by email rather than a foreign key (see
+// account.service.js#listOrdersForUser).
+model User {
+  id           String  @id @default(uuid())
+  email        String  @unique
+  passwordHash String
+  firstName    String?
+  lastName     String?
+  phone        String?
+
+  // Sprint 10 / Step 24 - Admin Security. Grants access to /admin and
+  // /api/admin/* on top of the normal customer auth system - there is no
+  // separate admin login, just this flag on the same User/JWT flow.
+  isAdmin Boolean @default(false)
+
+  // Sprint 10 / Step 26 - Admin Access Requests. The storefront has no
+  // customer accounts - every /register call is now a request for admin
+  // access, reviewed by an existing admin (see adminAccess.service.js).
+  // 'none' covers accounts that predate this flow. isAdmin is still the only
+  // field that actually grants access - this is bookkeeping/UI state only.
+  adminRequestStatus String    @default("none") // 'none' | 'pending' | 'approved' | 'declined'
+  adminRequestedAt   DateTime?
+  adminDecidedAt     DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  addresses   Address[]
+  resetTokens PasswordResetToken[]
+  wishlists   Wishlist[]
+  reviews     Review[]
+
+  @@map("users")
+}
+
+model Address {
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  label        String? // e.g. "Home", "Work"
+  fullName     String
+  phone        String?
+  addressLine1 String
+  addressLine2 String?
+  country      String
+  state        String
+  city         String
+  postalCode   String
+  isDefault    Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@map("addresses")
+}
+
+// Single-use, expiring tokens for the forgot/reset password flow. Only the
+// SHA-256 hash of the token is stored - the raw token is emailed/returned to
+// the user once and never persisted.
+model PasswordResetToken {
+  id        String    @id @default(uuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@map("password_reset_tokens")
+}
+
+// Sprint 9 / Step 22 - Inventory Automation. One row per sync run (manual
+// single-product, manual bulk, scheduled cron, or a retry-failed batch) -
+// distinct from Product's lastSyncedAt/lastSyncStatus/lastSyncError, which
+// only ever hold the latest attempt for that one product. Never references
+// Product by FK - a sync run outlives any single product and must remain
+// readable even if products are later deleted.
+model SyncLog {
+  id String @id @default(uuid())
+
+  type   String // 'manual' | 'scheduled' | 'retry' | 'single'
+  status String // 'running' | 'success' | 'partial' | 'error'
+
+  totalProducts Int @default(0)
+  succeeded     Int @default(0)
+  failed        Int @default(0)
+  changed       Int @default(0)
+
+  triggeredBy  String? // e.g. 'admin', 'cron'
+  errorSummary String? // truncated message when status = 'error'
+
+  startedAt  DateTime  @default(now())
+  finishedAt DateTime?
+
+  @@index([startedAt])
+  @@map("sync_logs")
+}
+
+model OrderItem {
+  id      String @id @default(uuid())
+  orderId String
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  // Nullable + SetNull so an order survives the product/variant being
+  // edited or deleted later - display always uses the snapshot fields
+  // below, never a live join.
+  productId String?
+  product   Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+  variantId String?
+  variant   Variant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
+
+  name         String
+  variantLabel String?
+  image        String?
+  sku          String?
+  unitPrice    Decimal @db.Decimal(10, 2)
+  quantity     Int
+  lineTotal    Decimal @db.Decimal(10, 2)
+
+  createdAt DateTime @default(now())
+
+  @@index([orderId])
+  @@map("order_items")
+}

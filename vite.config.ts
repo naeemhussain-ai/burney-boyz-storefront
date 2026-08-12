@@ -1,4 +1,4 @@
-import { defineConfig } from "vite";
+import { defineConfig, loadEnv } from "vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import viteReact from "@vitejs/plugin-react";
 import viteTsConfigPaths from "vite-tsconfig-paths";
@@ -9,7 +9,12 @@ import { nitro } from "nitro/vite";
 // deploys frontend and backend separately - see backend/.env's FRONTEND_URL/
 // CORS_ORIGINS side of the same relationship). Resolve it once at build
 // time so connect-src can allow exactly that origin instead of a wildcard.
-const apiBaseUrl = process.env.VITE_SHOPNOW_API_BASE_URL || "http://localhost:5000/api";
+//
+// Vite only auto-exposes .env files to client code via import.meta.env -
+// this config file runs in Node and needs loadEnv() to see .env.local too;
+// real process.env (e.g. Vercel's injected build-time vars) still wins.
+const env = { ...loadEnv("", process.cwd(), ""), ...process.env };
+const apiBaseUrl = env.VITE_SHOPNOW_API_BASE_URL || "http://localhost:5000/api";
 let apiOrigin = "http://localhost:5000";
 try {
   apiOrigin = new URL(apiBaseUrl).origin;
