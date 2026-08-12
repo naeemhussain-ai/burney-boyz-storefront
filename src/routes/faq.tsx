@@ -12,13 +12,13 @@ import { Truck, CreditCard, RefreshCw, Package, Shield, MessageSquare } from "lu
 export const Route = createFileRoute("/faq")({
   head: () => ({
     meta: [
-      { title: "Frequently Asked Questions — Burney Boyz" },
+      { title: "Frequently Asked Questions - Burney Boyz" },
       {
         name: "description",
         content:
           "Answers to common questions about shipping, returns, payments, and tracking your Burney Boyz order.",
       },
-      { property: "og:title", content: "FAQ — Burney Boyz" },
+      { property: "og:title", content: "FAQ - Burney Boyz" },
       { property: "og:url", content: "/faq" },
     ],
     links: [{ rel: "canonical", href: "/faq" }],
@@ -38,7 +38,7 @@ const faqCategories = [
       },
       {
         q: "Do you ship internationally?",
-        a: "Yes — we ship to 60+ countries worldwide. Delivery times and shipping rates vary by destination and will be calculated at checkout.",
+        a: "Yes - we ship to 60+ countries worldwide. Delivery times and shipping rates vary by destination and will be calculated at checkout.",
       },
       {
         q: "How can I track my order?",
@@ -87,7 +87,7 @@ const faqCategories = [
     faqs: [
       {
         q: "Do you offer bulk or wholesale pricing?",
-        a: "Yes — email wholesale@burneyboyz.com for custom pricing on orders of 25+ units. We work with businesses, gift buyers, and resellers.",
+        a: "Yes - email wholesale@burneyboyz.com for custom pricing on orders of 25+ units. We work with businesses, gift buyers, and resellers.",
       },
       {
         q: "How do I contact customer support?",

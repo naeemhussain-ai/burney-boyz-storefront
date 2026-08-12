@@ -29,7 +29,7 @@ export const Route = createFileRoute("/product/$id")({
   },
   head: ({ loaderData }) => ({
     meta: [
-      { title: `${loaderData?.product.name} — Burney Boyz` },
+      { title: `${loaderData?.product.name} - Burney Boyz` },
       { name: "description", content: loaderData?.product.description },
       { property: "og:title", content: loaderData?.product.name },
       { property: "og:description", content: loaderData?.product.description },
@@ -56,7 +56,7 @@ export const Route = createFileRoute("/product/$id")({
 });
 
 const mockReviews = [
-  { name: "Sarah L.", rating: 5, text: "Exactly as described and arrived faster than expected. The quality is outstanding — you can really feel the difference compared to cheaper alternatives.", date: "2 days ago" },
+  { name: "Sarah L.", rating: 5, text: "Exactly as described and arrived faster than expected. The quality is outstanding - you can really feel the difference compared to cheaper alternatives.", date: "2 days ago" },
   { name: "Mike R.", rating: 4, text: "Solid quality for the price. Would definitely buy again. Only minor issue was packaging was slightly dented but the product itself is perfect.", date: "1 week ago" },
   { name: "Anita V.", rating: 5, text: "Obsessed! Already ordered another one as a gift for my sister. She loved it. Shipping was super fast too!", date: "2 weeks ago" },
 ];
@@ -138,7 +138,13 @@ function ProductPage() {
                       activeImg === img ? "border-primary shadow-glow" : "border-transparent hover:border-border"
                     }`}
                   >
-                    <img src={img} alt="" className="aspect-square w-full object-cover" />
+                    <img
+                      src={img}
+                      alt=""
+                      loading="lazy"
+                      decoding="async"
+                      className="aspect-square w-full object-cover"
+                    />
                   </button>
                 ))}
               </div>
@@ -179,11 +185,11 @@ function ProductPage() {
             </div>
 
             {/* Price */}
-            <div className="mt-5 flex items-baseline gap-3">
-              <span className="text-4xl font-extrabold">${product.price.toFixed(2)}</span>
+            <div className="mt-5 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+              <span className="text-3xl font-extrabold sm:text-4xl">${product.price.toFixed(2)}</span>
               {product.compareAtPrice && (
                 <>
-                  <span className="text-xl text-muted-foreground line-through">
+                  <span className="text-lg text-muted-foreground line-through sm:text-xl">
                     ${product.compareAtPrice.toFixed(2)}
                   </span>
                   <span className="rounded-full bg-green-100 px-3 py-0.5 text-sm font-bold text-green-700">
@@ -196,7 +202,7 @@ function ProductPage() {
             {/* In stock */}
             <div className="mt-3 flex items-center gap-2 text-sm text-green-600">
               <Package className="h-4 w-4" />
-              {product.inStock ? "In stock — ships within 1–2 business days" : "Out of stock"}
+              {product.inStock ? "In stock - ships within 1–2 business days" : "Out of stock"}
             </div>
 
             <p className="mt-5 leading-relaxed text-muted-foreground">{product.description}</p>
@@ -227,7 +233,7 @@ function ProductPage() {
             ))}
 
             {/* Quantity + CTA */}
-            <div className="mt-8 flex items-center gap-3">
+            <div className="mt-8 flex flex-wrap items-center gap-3">
               <div className="flex items-center overflow-hidden rounded-full border">
                 <button
                   onClick={() => setQty((q) => Math.max(1, q - 1))}
@@ -248,14 +254,14 @@ function ProductPage() {
               <Button
                 onClick={() => handleAdd(false)}
                 size="lg"
-                className="flex-1 rounded-full font-semibold"
+                className="flex-1 min-w-[140px] rounded-full font-semibold"
               >
                 Add to Cart
               </Button>
               <Button
                 variant="outline"
                 size="icon"
-                className="h-11 w-11 rounded-full"
+                className="h-11 w-11 flex-shrink-0 rounded-full"
                 aria-label="Wishlist"
               >
                 <Heart className="h-4 w-4" />
@@ -263,7 +269,7 @@ function ProductPage() {
               <Button
                 variant="outline"
                 size="icon"
-                className="h-11 w-11 rounded-full"
+                className="h-11 w-11 flex-shrink-0 rounded-full"
                 onClick={handleShare}
                 aria-label="Share"
               >
@@ -300,19 +306,21 @@ function ProductPage() {
 
         {/* Tabs */}
         <Tabs defaultValue="description" className="mt-16">
-          <TabsList className="rounded-full">
-            <TabsTrigger value="description" className="rounded-full">Description</TabsTrigger>
-            <TabsTrigger value="shipping" className="rounded-full">Shipping Info</TabsTrigger>
-            <TabsTrigger value="reviews" className="rounded-full">
-              Reviews ({product.reviewCount})
-            </TabsTrigger>
-          </TabsList>
+          <div className="overflow-x-auto">
+            <TabsList className="rounded-full">
+              <TabsTrigger value="description" className="rounded-full">Description</TabsTrigger>
+              <TabsTrigger value="shipping" className="rounded-full">Shipping Info</TabsTrigger>
+              <TabsTrigger value="reviews" className="rounded-full">
+                Reviews ({product.reviewCount})
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
           <TabsContent value="description" className="mt-6">
             <div className="rounded-2xl border bg-card p-6 text-sm leading-relaxed text-muted-foreground space-y-4">
               <p>{product.description}</p>
               <p>
-                Crafted to last and designed to impress — this product is part of our trending
+                Crafted to last and designed to impress - this product is part of our trending
                 collection, hand-selected by the Burney Boyz team for quality, value, and style.
                 Every item we carry goes through a vetting process before it makes it to the shop.
               </p>

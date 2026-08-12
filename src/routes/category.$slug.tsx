@@ -21,9 +21,9 @@ export const Route = createFileRoute("/category/$slug")({
   },
   head: ({ loaderData }) => ({
     meta: [
-      { title: `${loaderData?.category.name} — Burney Boyz` },
+      { title: `${loaderData?.category.name} - Burney Boyz` },
       { name: "description", content: loaderData?.category.description },
-      { property: "og:title", content: `${loaderData?.category.name} — Burney Boyz` },
+      { property: "og:title", content: `${loaderData?.category.name} - Burney Boyz` },
       { property: "og:url", content: `/category/${loaderData?.category.slug}` },
     ],
     links: [{ rel: "canonical", href: `/category/${loaderData?.category.slug}` }],
@@ -57,10 +57,10 @@ function CategoryPage() {
     <>
       <PageHero eyebrow="Category" title={category.name} description={category.description} />
       <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-        <div className="mb-6 flex items-center justify-between">
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-2">
           <p className="text-sm text-muted-foreground">{items.length} products</p>
           <Select value={sort} onValueChange={setSort}>
-            <SelectTrigger className="w-48"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="w-40 sm:w-48"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="featured">Featured</SelectItem>
               <SelectItem value="price-asc">Price: Low to High</SelectItem>

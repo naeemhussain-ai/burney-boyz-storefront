@@ -5,9 +5,9 @@ import { Truck, Package, Globe2, MapPin, RotateCcw, FileText } from "lucide-reac
 export const Route = createFileRoute("/shipping-returns")({
   head: () => ({
     meta: [
-      { title: "Shipping & Returns — Burney Boyz" },
+      { title: "Shipping & Returns - Burney Boyz" },
       { name: "description", content: "Shipping options, delivery times, and our 30-day return policy at Burney Boyz." },
-      { property: "og:title", content: "Shipping & Returns — Burney Boyz" },
+      { property: "og:title", content: "Shipping & Returns - Burney Boyz" },
       { property: "og:url", content: "/shipping-returns" },
     ],
     links: [{ rel: "canonical", href: "/shipping-returns" }],
@@ -54,7 +54,7 @@ function ShippingReturns() {
       <PageHero
         eyebrow="Policies"
         title="Shipping & Returns"
-        description="Everything you need to know about getting your order — and sending it back if needed."
+        description="Everything you need to know about getting your order - and sending it back if needed."
       />
       <section className="mx-auto max-w-4xl px-4 py-14 sm:px-6 lg:px-8">
         <div className="space-y-5">

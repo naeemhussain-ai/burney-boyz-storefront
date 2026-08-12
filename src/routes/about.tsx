@@ -17,7 +17,7 @@ import { PageHero } from "@/components/layout/PageHero";
 export const Route = createFileRoute("/about")({
   head: () => ({
     meta: [
-      { title: "About Burney Boyz — Our Story & Mission" },
+      { title: "About Burney Boyz - Our Story & Mission" },
       {
         name: "description",
         content:
@@ -36,7 +36,7 @@ const values = [
   {
     icon: Sparkles,
     title: "Curated Quality",
-    desc: "Every single product on our store goes through a thorough vetting process before it reaches you. No junk, no filler — just genuinely good stuff.",
+    desc: "Every single product on our store goes through a thorough vetting process before it reaches you. No junk, no filler - just genuinely good stuff.",
     color: "bg-yellow-50 text-yellow-600",
   },
   {
@@ -100,6 +100,8 @@ function About() {
             <img
               src="https://images.unsplash.com/photo-1556761175-5973dc0f32e7?auto=format&fit=crop&w=1200&q=80"
               alt="Burney Boyz team collaborating"
+              loading="lazy"
+              decoding="async"
               className="aspect-[4/3] w-full object-cover"
             />
           </div>
@@ -128,14 +130,14 @@ function About() {
           <p className="mt-5 leading-relaxed text-muted-foreground">
             We're a small team obsessed with finding the gear, gadgets, and goods that make
             everyday life a little better. From smart home upgrades to fitness essentials,
-            we hand-pick every item to make sure it's worth your money — and your time.
+            we hand-pick every item to make sure it's worth your money - and your time.
           </p>
           <p className="mt-4 leading-relaxed text-muted-foreground">
             With partners across the globe, we keep shipping fast and prices fair, so you
             can shop the latest trends without the markup. Every product you see on our
             store has been tested, reviewed, and approved by our team before it ever goes live.
           </p>
-          <div className="mt-6 flex gap-3">
+          <div className="mt-6 flex flex-wrap gap-3">
             <Button asChild className="rounded-full">
               <Link to="/shop">
                 Explore the shop <ArrowRight className="h-4 w-4" />

@@ -4,9 +4,9 @@ import { PageHero } from "@/components/layout/PageHero";
 export const Route = createFileRoute("/privacy-policy")({
   head: () => ({
     meta: [
-      { title: "Privacy Policy — Burney Boyz" },
+      { title: "Privacy Policy - Burney Boyz" },
       { name: "description", content: "How Burney Boyz collects, uses, and protects your personal information." },
-      { property: "og:title", content: "Privacy Policy — Burney Boyz" },
+      { property: "og:title", content: "Privacy Policy - Burney Boyz" },
       { property: "og:url", content: "/privacy-policy" },
     ],
     links: [{ rel: "canonical", href: "/privacy-policy" }],
@@ -31,7 +31,7 @@ function Privacy() {
       <article className="mx-auto max-w-3xl px-4 py-14 sm:px-6 lg:px-8">
         <p className="mb-8 text-muted-foreground">
           Burney Boyz ("we", "us") respects your privacy. This policy explains what information we collect,
-          how we use it, and the rights you have. Placeholder copy — please review with legal counsel before publishing.
+          how we use it, and the rights you have. Placeholder copy - please review with legal counsel before publishing.
         </p>
         <div className="space-y-8">
           {sections.map((s) => (

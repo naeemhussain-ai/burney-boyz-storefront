@@ -7,13 +7,13 @@ import { PageHero } from "@/components/layout/PageHero";
 export const Route = createFileRoute("/categories")({
   head: () => ({
     meta: [
-      { title: "Shop by Category — Burney Boyz" },
+      { title: "Shop by Category - Burney Boyz" },
       {
         name: "description",
         content:
           "Browse Burney Boyz by category: electronics, home, beauty, fashion, fitness, and pet supplies.",
       },
-      { property: "og:title", content: "Shop by Category — Burney Boyz" },
+      { property: "og:title", content: "Shop by Category - Burney Boyz" },
       { property: "og:url", content: "/categories" },
     ],
     links: [{ rel: "canonical", href: "/categories" }],
@@ -27,7 +27,7 @@ function Categories() {
       <PageHero
         eyebrow="Browse categories"
         title="Find your next favourite thing"
-        description="Six hand-picked collections covering everything trending right now — from tech to pet supplies and beyond."
+        description="Six hand-picked collections covering everything trending right now - from tech to pet supplies and beyond."
       />
 
       <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
@@ -81,6 +81,8 @@ function Categories() {
                 <img
                   src={c.image}
                   alt={c.name}
+                  loading="lazy"
+                  decoding="async"
                   className="aspect-[4/3] w-full object-cover transition duration-700 group-hover:scale-110"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />

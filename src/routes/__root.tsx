@@ -11,6 +11,8 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { CartProvider } from "@/lib/cart";
+import { AuthProvider } from "@/lib/auth";
+import { WishlistProvider } from "@/lib/wishlist";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { CartDrawer } from "@/components/layout/CartDrawer";
@@ -81,20 +83,26 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Burney Boyz — Trending Products, Delivered" },
+      { title: "Burney Boyz - Trending Products, Delivered" },
       {
         name: "description",
         content:
-          "Burney Boyz is your one-stop shop for the trending products everyone's talking about — gadgets, home, beauty, fashion, fitness, and more.",
+          "Burney Boyz is your one-stop shop for the trending products everyone's talking about - gadgets, home, beauty, fashion, fitness, and more.",
       },
-      { property: "og:title", content: "Burney Boyz — Trending Products, Delivered" },
+      { property: "og:title", content: "Burney Boyz - Trending Products, Delivered" },
       {
         property: "og:description",
         content:
-          "Shop the latest trending products across gadgets, home, beauty, fashion, fitness, and pets — all in one place.",
+          "Shop the latest trending products across gadgets, home, beauty, fashion, fitness, and pets - all in one place.",
       },
       { property: "og:type", content: "website" },
       { property: "og:site_name", content: "Burney Boyz" },
+      // Fallback social-share image - TanStack Router merges root meta into
+      // every child route's head, so pages without their own og:image
+      // (about/contact/faq/categories/policies) automatically get this one
+      // instead of showing no preview image at all. Pages with a more
+      // specific image (products) already override it in their own head().
+      { property: "og:image", content: "/logo.png" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [
@@ -134,15 +142,19 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <CartProvider>
-        <Header />
-        <main className="min-h-[60vh]">
-          <Outlet />
-        </main>
-        <Footer />
-        <CartDrawer />
-        <Toaster richColors position="top-right" />
-      </CartProvider>
+      <AuthProvider>
+        <WishlistProvider>
+          <CartProvider>
+            <Header />
+            <main className="min-h-[60vh]">
+              <Outlet />
+            </main>
+            <Footer />
+            <CartDrawer />
+            <Toaster richColors position="top-right" />
+          </CartProvider>
+        </WishlistProvider>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }

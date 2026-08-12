@@ -53,7 +53,7 @@ export function Footer() {
             </div>
             <p className="mt-5 max-w-sm text-sm leading-relaxed text-secondary-foreground/70">
               Trending products, delivered worldwide. Burney Boyz curates the gear, gadgets,
-              and goods everyone's talking about — all in one shop you can trust.
+              and goods everyone's talking about - all in one shop you can trust.
             </p>
 
             {/* Contact info */}

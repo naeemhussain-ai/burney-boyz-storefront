@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { useCart } from "@/lib/cart";
 import { Minus, Plus, Trash2, ShoppingBag, Truck, ShieldCheck } from "lucide-react";
 import { Link } from "@tanstack/react-router";
-import { toast } from "sonner";
 
 export function CartDrawer() {
   const { items, isOpen, closeCart, updateQuantity, removeItem, subtotal } = useCart();
@@ -76,6 +75,8 @@ export function CartDrawer() {
                     <img
                       src={item.image}
                       alt={item.name}
+                      loading="lazy"
+                      decoding="async"
                       className="h-20 w-20 flex-none rounded-lg object-cover"
                     />
                     <div className="flex flex-1 flex-col gap-1 min-w-0">
@@ -106,7 +107,9 @@ export function CartDrawer() {
                           >
                             <Minus className="h-3 w-3" />
                           </button>
-                          <span className="w-6 text-center text-xs font-medium">{item.quantity}</span>
+                          <span className="w-6 text-center text-xs font-medium">
+                            {item.quantity}
+                          </span>
                           <button
                             className="grid h-7 w-7 place-items-center transition hover:bg-muted"
                             onClick={() => updateQuantity(item.id, item.quantity + 1, item.variant)}
@@ -134,7 +137,9 @@ export function CartDrawer() {
                 </div>
                 <div className="flex justify-between text-muted-foreground">
                   <span>Shipping</span>
-                  <span className={subtotal >= 50 ? "font-semibold text-green-600" : "text-foreground"}>
+                  <span
+                    className={subtotal >= 50 ? "font-semibold text-green-600" : "text-foreground"}
+                  >
                     {subtotal >= 50 ? "FREE" : "Calculated at checkout"}
                   </span>
                 </div>
@@ -145,15 +150,12 @@ export function CartDrawer() {
               </div>
 
               <Button
+                asChild
                 className="w-full rounded-xl font-semibold"
                 size="lg"
-                onClick={() =>
-                  toast.info("Checkout coming soon!", {
-                    description: "Payment processing will be available in the next update.",
-                  })
-                }
+                onClick={closeCart}
               >
-                Proceed to Checkout
+                <Link to="/checkout">Proceed to Checkout</Link>
               </Button>
 
               <button

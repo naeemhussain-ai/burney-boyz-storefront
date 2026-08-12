@@ -24,13 +24,13 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Burney Boyz — Shop Trending Products Online" },
+      { title: "Burney Boyz - Shop Trending Products Online" },
       {
         name: "description",
         content:
           "Discover trending gadgets, home, beauty, fashion, fitness, and pet products at Burney Boyz. Fast shipping, secure checkout, easy returns.",
       },
-      { property: "og:title", content: "Burney Boyz — Shop Trending Products Online" },
+      { property: "og:title", content: "Burney Boyz - Shop Trending Products Online" },
       {
         property: "og:description",
         content: "Trending products across every category. Curated, affordable, delivered.",
@@ -74,7 +74,7 @@ const testimonials = [
     name: "Amara K.",
     location: "New York, USA",
     quote:
-      "Loved everything about my order — super fast shipping and the quality is even better than I expected. Will definitely be ordering again!",
+      "Loved everything about my order - super fast shipping and the quality is even better than I expected. Will definitely be ordering again!",
     rating: 5,
     product: "Wireless Earbuds Pro",
     avatar: "AK",
@@ -92,7 +92,7 @@ const testimonials = [
     name: "Riley M.",
     location: "Sydney, AU",
     quote:
-      "Customer service actually replied within an hour. So rare these days. The team really cares about their customers — incredible experience.",
+      "Customer service actually replied within an hour. So rare these days. The team really cares about their customers - incredible experience.",
     rating: 5,
     product: "Smart Fitness Tracker",
     avatar: "RM",
@@ -142,14 +142,14 @@ function Home() {
         <div className="absolute -left-20 bottom-0 h-[400px] w-[400px] rounded-full bg-primary/8 blur-3xl" />
 
         <div className="relative mx-auto grid max-w-7xl items-center gap-12 px-4 py-20 sm:px-6 lg:grid-cols-2 lg:px-8 lg:py-28">
-          {/* Left — copy */}
+          {/* Left - copy */}
           <div>
             <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 py-1.5 text-xs font-semibold text-primary">
               <Zap className="h-3.5 w-3.5 fill-primary" />
               New drops every week
             </div>
 
-            <h1 className="mt-6 text-5xl font-extrabold leading-[1.08] tracking-tight md:text-7xl">
+            <h1 className="mt-6 text-4xl font-extrabold leading-[1.08] tracking-tight sm:text-5xl md:text-7xl">
               Trending
               <br />
               products,
@@ -159,7 +159,7 @@ function Home() {
             </h1>
 
             <p className="mt-6 max-w-lg text-lg leading-relaxed text-muted-foreground">
-              Burney Boyz hand-picks the gadgets, goods, and gear everyone's talking about —
+              Burney Boyz hand-picks the gadgets, goods, and gear everyone's talking about -
               so you can skip the scroll and shop the best, right now.
             </p>
 
@@ -199,7 +199,7 @@ function Home() {
             </div>
           </div>
 
-          {/* Right — product mosaic */}
+          {/* Right - product mosaic */}
           <div className="relative hidden lg:block">
             <div className="grid grid-cols-2 gap-4">
               {trending.slice(0, 4).map((p, i) => (
@@ -401,7 +401,7 @@ function Home() {
               </Link>
             </Button>
           </div>
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
             {newArrivals.map((p) => (
               <ProductCard key={p.id} product={p} />
             ))}

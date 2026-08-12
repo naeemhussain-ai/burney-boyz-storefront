@@ -1,11 +1,11 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { z } from "zod";
 import { zodValidator } from "@tanstack/zod-adapter";
-import { Search, SlidersHorizontal, X } from "lucide-react";
-import { products } from "@/data/products";
-import { categories } from "@/data/categories";
-import { ProductCard } from "@/components/shop/ProductCard";
+import { Loader2, Search, SlidersHorizontal, X } from "lucide-react";
+import { fetchShopCategories, searchShopProducts, type ShopSort } from "@/api/shop";
+import { ShopProductCard } from "@/components/shop/ShopProductCard";
 import { PageHero } from "@/components/layout/PageHero";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -23,19 +23,19 @@ import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetHeader } from "@/co
 const searchSchema = z.object({
   q: z.string().optional(),
   cat: z.string().optional(),
-  sort: z.enum(["featured", "price-asc", "price-desc", "newest", "rating"]).optional(),
+  sort: z.enum(["newest", "price-asc", "price-desc", "best-selling", "highest-rated"]).optional(),
 });
 
 export const Route = createFileRoute("/shop")({
   head: () => ({
     meta: [
-      { title: "Shop All Trending Products — Burney Boyz" },
+      { title: "Shop All Trending Products - Burney Boyz" },
       {
         name: "description",
         content:
           "Browse the full Burney Boyz catalog: filter by category, price, and rating to find the trending products you love.",
       },
-      { property: "og:title", content: "Shop — Burney Boyz" },
+      { property: "og:title", content: "Shop - Burney Boyz" },
       { property: "og:url", content: "/shop" },
     ],
     links: [{ rel: "canonical", href: "/shop" }],
@@ -44,54 +44,166 @@ export const Route = createFileRoute("/shop")({
   component: Shop,
 });
 
-const PAGE_SIZE = 8;
+const PAGE_SIZE = 12;
+const MAX_PRICE = 200;
+
+const SORT_OPTIONS: { value: ShopSort; label: string }[] = [
+  { value: "newest", label: "Newest" },
+  { value: "price-asc", label: "Price: Low to High" },
+  { value: "price-desc", label: "Price: High to Low" },
+  { value: "best-selling", label: "Best Selling" },
+  { value: "highest-rated", label: "Highest Rated" },
+];
 
 function Shop() {
   const search = Route.useSearch();
   const navigate = useNavigate({ from: "/shop" });
 
-  const [query, setQuery] = useState(search.q ?? "");
-  const [price, setPrice] = useState<[number, number]>([0, 200]);
-  const [selectedCats, setSelectedCats] = useState<string[]>(search.cat ? [search.cat] : []);
-  const [sort, setSort] = useState(search.sort ?? "featured");
-  const [visible, setVisible] = useState(PAGE_SIZE);
+  // Text input is local + debounced before it drives the query/URL - avoids
+  // a request (and a URL/history entry) on every keystroke.
+  const [queryInput, setQueryInput] = useState(search.q ?? "");
+  const [keyword, setKeyword] = useState(search.q ?? "");
+  const [selectedCats, setSelectedCats] = useState<string[]>(search.cat ? search.cat.split(",") : []);
+  const sort = search.sort ?? "newest";
 
-  const filtered = useMemo(() => {
-    let list = [...products];
-    const q = (query || search.q || "").toLowerCase().trim();
-    if (q) list = list.filter((p) => p.name.toLowerCase().includes(q));
-    if (selectedCats.length) list = list.filter((p) => selectedCats.includes(p.category));
-    list = list.filter((p) => p.price >= price[0] && p.price <= price[1]);
-    switch (sort) {
-      case "price-asc": list.sort((a, b) => a.price - b.price); break;
-      case "price-desc": list.sort((a, b) => b.price - a.price); break;
-      case "newest": list.sort((a, b) => b.createdAt.localeCompare(a.createdAt)); break;
-      case "rating": list.sort((a, b) => b.rating - a.rating); break;
-    }
-    return list;
-  }, [query, search.q, selectedCats, price, sort]);
+  // Price is drag-live locally, only committed to the query on pointer-up -
+  // dragging a slider must not fire a request per pixel.
+  const [priceDraft, setPriceDraft] = useState<[number, number]>([0, MAX_PRICE]);
+  const [price, setPrice] = useState<[number, number]>([0, MAX_PRICE]);
+  const [inStockOnly, setInStockOnly] = useState(false);
+  const [featuredOnly, setFeaturedOnly] = useState(false);
 
-  const visibleItems = filtered.slice(0, visible);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setKeyword(queryInput.trim());
+      navigate({ search: (prev) => ({ ...prev, q: queryInput.trim() || undefined }) });
+    }, 450);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [queryInput]);
 
-  const toggleCat = (slug: string) =>
-    setSelectedCats((prev) =>
-      prev.includes(slug) ? prev.filter((s) => s !== slug) : [...prev, slug],
+  const { data: categories } = useQuery({
+    queryKey: ["shop", "categories"],
+    queryFn: fetchShopCategories,
+    staleTime: 5 * 60_000,
+  });
+
+  const filters = {
+    keyword,
+    category: selectedCats.join(","),
+    sort,
+    minPrice: price[0],
+    maxPrice: price[1] < MAX_PRICE ? price[1] : undefined,
+    availability: inStockOnly ? ("in_stock" as const) : undefined,
+    featured: featuredOnly ? true : undefined,
+  };
+
+  const {
+    data,
+    isLoading,
+    isError,
+    error,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    refetch,
+  } = useInfiniteQuery({
+    queryKey: ["shop", "search", filters],
+    queryFn: ({ pageParam }) =>
+      searchShopProducts({
+        search: filters.keyword || undefined,
+        category: filters.category || undefined,
+        sort: filters.sort,
+        minPrice: filters.minPrice > 0 ? filters.minPrice : undefined,
+        maxPrice: filters.maxPrice,
+        availability: filters.availability,
+        featured: filters.featured,
+        page: pageParam,
+        limit: PAGE_SIZE,
+      }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) =>
+      lastPage.pagination.page < lastPage.pagination.totalPages
+        ? lastPage.pagination.page + 1
+        : undefined,
+  });
+
+  const products = useMemo(() => data?.pages.flatMap((p) => p.products) ?? [], [data]);
+  const total = data?.pages[0]?.pagination.total ?? 0;
+
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el || !hasNextPage) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting && !isFetchingNextPage) fetchNextPage();
+      },
+      { rootMargin: "400px" },
     );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  // CJ category names are full paths ("Jewelry & Watches > Mens Watches >
+  // Quartz Watches"); the filter only ever showed the first segment, so
+  // distinct categoryIds whose paths share a top-level name (common - CJ
+  // splits most categories into several leaf subcategories) rendered as
+  // visually identical duplicate checkboxes. Grouped here into one checkbox
+  // per top-level name, toggling every categoryId under it together - the
+  // backend already accepts a comma-separated categoryId list.
+  const categoryGroups = useMemo(() => {
+    const map = new Map<string, string[]>();
+    for (const c of categories ?? []) {
+      const label = c.name?.split(" > ")[0]?.trim() || "Unknown";
+      if (!map.has(label)) map.set(label, []);
+      map.get(label)!.push(c.id);
+    }
+    return Array.from(map.entries()).map(([label, ids]) => ({ label, ids }));
+  }, [categories]);
+
+  const toggleCatGroup = (ids: string[]) => {
+    const allSelected = ids.every((id) => selectedCats.includes(id));
+    const next = allSelected
+      ? selectedCats.filter((id) => !ids.includes(id))
+      : [...new Set([...selectedCats, ...ids])];
+    setSelectedCats(next);
+    navigate({ search: (prev) => ({ ...prev, cat: next.length ? next.join(",") : undefined }) });
+  };
+
+  const hasActiveFilters =
+    selectedCats.length > 0 ||
+    keyword ||
+    price[0] > 0 ||
+    price[1] < MAX_PRICE ||
+    inStockOnly ||
+    featuredOnly;
+
+  const clearFilters = () => {
+    setSelectedCats([]);
+    setQueryInput("");
+    setKeyword("");
+    setPriceDraft([0, MAX_PRICE]);
+    setPrice([0, MAX_PRICE]);
+    setInStockOnly(false);
+    setFeaturedOnly(false);
+    navigate({ search: {} });
+  };
 
   const FiltersInner = (
     <div className="space-y-6">
       <div>
         <h3 className="mb-3 text-sm font-semibold">Category</h3>
         <ul className="space-y-2">
-          {categories.map((c) => (
-            <li key={c.slug} className="flex items-center gap-2">
+          {categoryGroups.map((g) => (
+            <li key={g.label} className="flex items-center gap-2">
               <Checkbox
-                id={`cat-${c.slug}`}
-                checked={selectedCats.includes(c.slug)}
-                onCheckedChange={() => toggleCat(c.slug)}
+                id={`cat-${g.label}`}
+                checked={g.ids.every((id) => selectedCats.includes(id))}
+                onCheckedChange={() => toggleCatGroup(g.ids)}
               />
-              <label htmlFor={`cat-${c.slug}`} className="text-sm cursor-pointer">
-                {c.name}
+              <label htmlFor={`cat-${g.label}`} className="text-sm cursor-pointer">
+                {g.label}
               </label>
             </li>
           ))}
@@ -99,27 +211,42 @@ function Shop() {
       </div>
       <div>
         <h3 className="mb-3 text-sm font-semibold">
-          Price: ${price[0]} – ${price[1]}
+          Price: ${priceDraft[0]} – ${priceDraft[1]}
+          {priceDraft[1] >= MAX_PRICE ? "+" : ""}
         </h3>
         <Slider
           min={0}
-          max={200}
+          max={MAX_PRICE}
           step={5}
-          value={price}
-          onValueChange={(v) => setPrice([v[0], v[1]] as [number, number])}
+          value={priceDraft}
+          onValueChange={(v) => setPriceDraft([v[0], v[1]] as [number, number])}
+          onValueCommit={(v) => setPrice([v[0], v[1]] as [number, number])}
         />
       </div>
-      {(selectedCats.length > 0 || query) && (
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => {
-            setSelectedCats([]);
-            setQuery("");
-            setPrice([0, 200]);
-            navigate({ search: {} });
-          }}
-        >
+      <div className="space-y-2.5">
+        <div className="flex items-center gap-2">
+          <Checkbox
+            id="in-stock-only"
+            checked={inStockOnly}
+            onCheckedChange={(v) => setInStockOnly(v === true)}
+          />
+          <label htmlFor="in-stock-only" className="cursor-pointer text-sm">
+            In stock only
+          </label>
+        </div>
+        <div className="flex items-center gap-2">
+          <Checkbox
+            id="featured-only"
+            checked={featuredOnly}
+            onCheckedChange={(v) => setFeaturedOnly(v === true)}
+          />
+          <label htmlFor="featured-only" className="cursor-pointer text-sm">
+            Featured only
+          </label>
+        </div>
+      </div>
+      {hasActiveFilters && (
+        <Button variant="outline" size="sm" onClick={clearFilters}>
           <X className="h-4 w-4" /> Clear filters
         </Button>
       )}
@@ -139,22 +266,27 @@ function Shop() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search products..."
+              value={queryInput}
+              onChange={(e) => setQueryInput(e.target.value)}
+              placeholder="Search by product name or SKU..."
               className="pl-9"
             />
           </div>
-          <Select value={sort} onValueChange={(v) => setSort(v as typeof sort)}>
+          <Select
+            value={sort}
+            onValueChange={(v) =>
+              navigate({ search: (prev) => ({ ...prev, sort: v as ShopSort }) })
+            }
+          >
             <SelectTrigger className="sm:w-56">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="featured">Featured</SelectItem>
-              <SelectItem value="price-asc">Price: Low to High</SelectItem>
-              <SelectItem value="price-desc">Price: High to Low</SelectItem>
-              <SelectItem value="newest">Newest</SelectItem>
-              <SelectItem value="rating">Best Rating</SelectItem>
+              {SORT_OPTIONS.map((o) => (
+                <SelectItem key={o.value} value={o.value}>
+                  {o.label}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
           <Sheet>
@@ -178,27 +310,63 @@ function Shop() {
           </aside>
 
           <div>
-            <p className="mb-4 text-sm text-muted-foreground">
-              {filtered.length} {filtered.length === 1 ? "product" : "products"}
-            </p>
-            {filtered.length === 0 ? (
+            {isLoading ? (
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div key={i} className="aspect-[3/4.5] w-full animate-pulse rounded-2xl bg-muted" />
+                ))}
+              </div>
+            ) : isError ? (
+              <div className="rounded-2xl border bg-card p-12 text-center">
+                <p className="text-sm text-muted-foreground">
+                  {error instanceof Error ? error.message : "Something went wrong."}
+                </p>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="mt-4 rounded-full"
+                  onClick={() => refetch()}
+                >
+                  Try again
+                </Button>
+              </div>
+            ) : products.length === 0 ? (
               <div className="rounded-2xl border bg-card p-12 text-center text-muted-foreground">
                 No products match your filters.
               </div>
             ) : (
               <>
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                  {visibleItems.map((p) => (
-                    <ProductCard key={p.id} product={p} />
+                <p className="mb-4 text-sm text-muted-foreground">
+                  {total} {total === 1 ? "product" : "products"}
+                </p>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {products.map((p) => (
+                    <ShopProductCard key={p.id} product={p} />
                   ))}
                 </div>
-                {visible < filtered.length && (
-                  <div className="mt-10 flex justify-center">
-                    <Button size="lg" variant="outline" onClick={() => setVisible((v) => v + PAGE_SIZE)}>
-                      Load more
+
+                <div ref={sentinelRef} className="mt-10 flex justify-center">
+                  {hasNextPage ? (
+                    <Button
+                      size="lg"
+                      variant="outline"
+                      onClick={() => fetchNextPage()}
+                      disabled={isFetchingNextPage}
+                    >
+                      {isFetchingNextPage ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" /> Loading…
+                        </>
+                      ) : (
+                        "Load more"
+                      )}
                     </Button>
-                  </div>
-                )}
+                  ) : (
+                    <p className="text-sm text-muted-foreground">
+                      You've reached the end of the results.
+                    </p>
+                  )}
+                </div>
               </>
             )}
           </div>

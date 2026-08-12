@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /account
+Disallow: /checkout
+Disallow: /payment-success
+Disallow: /payment-cancel
+Disallow: /reset-password
+Disallow: /forgot-password
+
+Sitemap: https://burneyboyz.com/sitemap.xml

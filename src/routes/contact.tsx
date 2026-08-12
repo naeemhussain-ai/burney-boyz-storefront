@@ -19,12 +19,12 @@ const contactSchema = z.object({
 export const Route = createFileRoute("/contact")({
   head: () => ({
     meta: [
-      { title: "Contact Us — Burney Boyz" },
+      { title: "Contact Us - Burney Boyz" },
       {
         name: "description",
-        content: "Get in touch with the Burney Boyz team — we usually reply within 24 hours.",
+        content: "Get in touch with the Burney Boyz team - we usually reply within 24 hours.",
       },
-      { property: "og:title", content: "Contact — Burney Boyz" },
+      { property: "og:title", content: "Contact - Burney Boyz" },
       { property: "og:url", content: "/contact" },
     ],
     links: [{ rel: "canonical", href: "/contact" }],

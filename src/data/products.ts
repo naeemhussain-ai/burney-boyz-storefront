@@ -188,7 +188,7 @@ export const products: Product[] = [
     category: "beauty-personal-care",
     rating: 4.6,
     reviewCount: 144,
-    description: "6-pack of premium mulberry silk scrunchies — gentle on hair, gorgeous on you.",
+    description: "6-pack of premium mulberry silk scrunchies - gentle on hair, gorgeous on you.",
     inStock: true,
     trending: true,
     createdAt: "2025-06-15",
