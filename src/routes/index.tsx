@@ -118,8 +118,17 @@ const stats = [
 ];
 
 function Home() {
-  const trending = products.filter((p) => p.trending).slice(0, 12);
   const featuredDeal = products.find((p) => p.compareAtPrice) ?? products[0];
+
+  // Hero mosaic - real catalog data, latest products that aren't already
+  // shown as Featured or New Arrival elsewhere on this page.
+  const { data: heroResult } = useQuery({
+    queryKey: ["shop", "hero-mosaic"],
+    queryFn: () =>
+      searchShopProducts({ featured: false, newArrival: false, sort: "newest", limit: 4 }),
+    staleTime: 5 * 60_000,
+  });
+  const heroProducts = heroResult?.products ?? [];
 
   // Hot picks this week - real catalog data, curated via the "Featured"
   // toggle on Admin > Products (same flag the Shop page's "Featured only"
@@ -225,33 +234,39 @@ function Home() {
           {/* Right - product mosaic */}
           <div className="relative hidden lg:block">
             <div className="grid grid-cols-2 gap-4">
-              {trending.slice(0, 4).map((p, i) => (
-                <Link
-                  key={p.id}
-                  to="/product/$id"
-                  params={{ id: p.id }}
-                  className={`group overflow-hidden rounded-2xl bg-card shadow-card transition hover:shadow-soft ${
-                    i % 2 ? "translate-y-6" : ""
-                  }`}
-                >
-                  <div className="relative aspect-square overflow-hidden">
-                    <img
-                      src={p.image}
-                      alt={p.name}
-                      className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-                    />
-                    {p.compareAtPrice && (
-                      <span className="absolute left-2 top-2 rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-white">
-                        SALE
-                      </span>
-                    )}
-                  </div>
-                  <div className="p-3">
-                    <p className="truncate text-xs font-medium">{p.name}</p>
-                    <p className="mt-0.5 text-sm font-bold text-primary">${p.price.toFixed(2)}</p>
-                  </div>
-                </Link>
-              ))}
+              {heroProducts.map((p, i) => {
+                const price = Number(p.myPrice) || 0;
+                const comparePrice = p.comparePrice ? Number(p.comparePrice) : null;
+                return (
+                  <Link
+                    key={p.id}
+                    to="/shop/$slug"
+                    params={{ slug: p.slug }}
+                    className={`group overflow-hidden rounded-2xl bg-card shadow-card transition hover:shadow-soft ${
+                      i % 2 ? "translate-y-6" : ""
+                    }`}
+                  >
+                    <div className="relative aspect-square overflow-hidden bg-muted">
+                      {p.image && (
+                        <img
+                          src={p.image}
+                          alt={p.name}
+                          className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                        />
+                      )}
+                      {comparePrice && comparePrice > price && (
+                        <span className="absolute left-2 top-2 rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-white">
+                          SALE
+                        </span>
+                      )}
+                    </div>
+                    <div className="p-3">
+                      <p className="truncate text-xs font-medium">{p.name}</p>
+                      <p className="mt-0.5 text-sm font-bold text-primary">${price.toFixed(2)}</p>
+                    </div>
+                  </Link>
+                );
+              })}
             </div>
 
             {/* Floating stat card */}
