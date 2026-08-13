@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import {
   ArrowRight,
   Truck,
@@ -15,8 +16,9 @@ import {
   Globe,
 } from "lucide-react";
 import { products } from "@/data/products";
-import { categories } from "@/data/categories";
-import { ProductCard } from "@/components/shop/ProductCard";
+import { searchShopProducts } from "@/api/shop";
+import { useShopCategoryGroups } from "@/hooks/useShopCategoryGroups";
+import { ShopProductCard } from "@/components/shop/ShopProductCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -117,8 +119,29 @@ const stats = [
 
 function Home() {
   const trending = products.filter((p) => p.trending).slice(0, 12);
-  const newArrivals = products.slice(0, 4);
   const featuredDeal = products.find((p) => p.compareAtPrice) ?? products[0];
+
+  // Hot picks this week - real catalog data, curated via the "Featured"
+  // toggle on Admin > Products (same flag the Shop page's "Featured only"
+  // filter uses). Separate from `trending` above, which still backs the
+  // hero mosaic and stays on static demo data.
+  const { data: featuredResult, isLoading: featuredLoading } = useQuery({
+    queryKey: ["shop", "featured-home"],
+    queryFn: () => searchShopProducts({ featured: true, limit: 12 }),
+    staleTime: 5 * 60_000,
+  });
+  const featuredProducts = featuredResult?.products;
+
+  const { data: categoryGroups, isLoading: categoryGroupsLoading } = useShopCategoryGroups();
+
+  // New Arrivals - curated via the "New Arrival" toggle on Admin > Products
+  // (set right after CJ import, same place/pattern as "Featured").
+  const { data: newArrivalsResult, isLoading: newArrivalsLoading } = useQuery({
+    queryKey: ["shop", "new-arrivals-home"],
+    queryFn: () => searchShopProducts({ newArrival: true, limit: 4, sort: "newest" }),
+    staleTime: 5 * 60_000,
+  });
+  const newArrivals = newArrivalsResult?.products;
 
   return (
     <>
@@ -285,11 +308,23 @@ function Home() {
             </Link>
           </Button>
         </div>
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-          {trending.map((p) => (
-            <ProductCard key={p.id} product={p} />
-          ))}
-        </div>
+        {featuredLoading ? (
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className="aspect-[3/4.5] w-full animate-pulse rounded-2xl bg-muted" />
+            ))}
+          </div>
+        ) : featuredProducts && featuredProducts.length > 0 ? (
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+            {featuredProducts.map((p) => (
+              <ShopProductCard key={p.id} product={p} />
+            ))}
+          </div>
+        ) : (
+          <div className="rounded-2xl border bg-card p-12 text-center text-muted-foreground">
+            No featured products yet. Mark products as "Featured" in Admin → Products to show them here.
+          </div>
+        )}
         <div className="mt-8 text-center sm:hidden">
           <Button asChild variant="outline" className="rounded-full">
             <Link to="/shop">View all products <ArrowRight className="h-4 w-4" /></Link>
@@ -352,35 +387,51 @@ function Home() {
             </div>
             <h2 className="mt-3 text-3xl font-bold md:text-4xl">Find what you love</h2>
             <p className="mt-2 text-muted-foreground">
-              Explore our hand-picked collections across 6 categories
+              Explore our hand-picked collections, fresh from the catalog
             </p>
           </div>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {categories.map((c, i) => (
-              <Link
-                key={c.slug}
-                to="/category/$slug"
-                params={{ slug: c.slug }}
-                className={`group relative overflow-hidden rounded-3xl shadow-card ${
-                  i === 0 ? "sm:col-span-2 lg:col-span-1" : ""
-                }`}
-              >
-                <img
-                  src={c.image}
-                  alt={c.name}
-                  className="aspect-[4/3] w-full object-cover transition duration-700 group-hover:scale-110"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-                <div className="absolute inset-x-0 bottom-0 p-6 text-white">
-                  <h3 className="text-xl font-extrabold tracking-tight">{c.name}</h3>
-                  <p className="mt-1 text-sm text-white/75">{c.description}</p>
-                  <span className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-primary">
-                    Shop now <ChevronRight className="h-3.5 w-3.5" />
-                  </span>
-                </div>
-              </Link>
-            ))}
-          </div>
+          {categoryGroupsLoading ? (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="aspect-[4/3] w-full animate-pulse rounded-3xl bg-muted" />
+              ))}
+            </div>
+          ) : (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {(categoryGroups ?? []).map((g, i) => (
+                <Link
+                  key={g.label}
+                  to="/shop"
+                  search={{ cat: g.ids.join(",") }}
+                  className={`group relative overflow-hidden rounded-3xl bg-muted shadow-card ${
+                    i === 0 ? "sm:col-span-2 lg:col-span-1" : ""
+                  }`}
+                >
+                  {g.image ? (
+                    <img
+                      src={g.image}
+                      alt={g.label}
+                      loading="lazy"
+                      decoding="async"
+                      className="aspect-[4/3] w-full object-cover transition duration-700 group-hover:scale-110"
+                    />
+                  ) : (
+                    <div className="aspect-[4/3] w-full" />
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+                  <div className="absolute inset-x-0 bottom-0 p-6 text-white">
+                    <span className="rounded-full bg-primary/90 px-2.5 py-0.5 text-[10px] font-bold text-white">
+                      {g.count} products
+                    </span>
+                    <h3 className="mt-3 text-xl font-extrabold tracking-tight">{g.label}</h3>
+                    <span className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-primary">
+                      Shop now <ChevronRight className="h-3.5 w-3.5" />
+                    </span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
@@ -401,11 +452,23 @@ function Home() {
               </Link>
             </Button>
           </div>
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-            {newArrivals.map((p) => (
-              <ProductCard key={p.id} product={p} />
-            ))}
-          </div>
+          {newArrivalsLoading ? (
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="aspect-[3/4.5] w-full animate-pulse rounded-2xl bg-muted" />
+              ))}
+            </div>
+          ) : newArrivals && newArrivals.length > 0 ? (
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+              {newArrivals.map((p) => (
+                <ShopProductCard key={p.id} product={p} />
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-2xl border bg-card p-12 text-center text-muted-foreground">
+              No new arrivals yet. Mark products as "New Arrival" in Admin → Products to show them here.
+            </div>
+          )}
         </div>
       </section>
 

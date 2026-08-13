@@ -36,6 +36,7 @@ function EditProductForm({ product, onClose }: { product: AdminProduct; onClose:
 
   const [pricing, setPricing] = useState<PricingEngineState | null>(null);
   const [featured, setFeatured] = useState(product.featured);
+  const [newArrival, setNewArrival] = useState(product.newArrival);
   const [status, setStatus] = useState<AdminProductStatus>(product.status);
   const [shortDescription, setShortDescription] = useState(product.shortDescription ?? "");
   const [description, setDescription] = useState(product.description ?? "");
@@ -67,6 +68,7 @@ function EditProductForm({ product, onClose }: { product: AdminProduct; onClose:
       comparePrice: pricing.values.comparePrice,
       shippingCost: pricing.values.shippingCost,
       featured,
+      newArrival,
       status,
       shortDescription: shortDescription.trim() || null,
       description: description.trim() || null,
@@ -95,6 +97,13 @@ function EditProductForm({ product, onClose }: { product: AdminProduct; onClose:
           Featured
         </Label>
         <Switch id="featured" checked={featured} onCheckedChange={setFeatured} />
+      </div>
+
+      <div className="flex items-center justify-between rounded-lg border px-3 py-2.5">
+        <Label htmlFor="newArrival" className="cursor-pointer">
+          New Arrival
+        </Label>
+        <Switch id="newArrival" checked={newArrival} onCheckedChange={setNewArrival} />
       </div>
 
       <div className="space-y-1.5">

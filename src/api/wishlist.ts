@@ -27,6 +27,7 @@ export interface WishlistProduct {
   categoryId: string | null;
   categoryName: string | null;
   featured: boolean;
+  newArrival: boolean;
   avgRating: number | string | null;
   reviewCount: number | null;
   createdAt: string;

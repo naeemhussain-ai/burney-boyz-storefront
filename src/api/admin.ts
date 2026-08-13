@@ -98,6 +98,7 @@ export interface AdminProduct {
   shippingCountries: string[] | null;
   status: AdminProductStatus;
   featured: boolean;
+  newArrival: boolean;
   createdAt: string;
   updatedAt: string;
   variants?: AdminVariant[];
@@ -140,6 +141,7 @@ export interface AdminProductUpdateInput {
   comparePrice?: number | null;
   shippingCost?: number;
   featured?: boolean;
+  newArrival?: boolean;
   status?: AdminProductStatus;
   image?: string | null;
 }

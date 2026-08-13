@@ -30,6 +30,7 @@ export interface ShopProductSummary {
   categoryId: string | null;
   categoryName: string | null;
   featured: boolean;
+  newArrival: boolean;
   avgRating: number | string | null;
   reviewCount: number | null;
   createdAt: string;
@@ -144,6 +145,7 @@ export interface ShopSearchParams {
   maxPrice?: number;
   availability?: ShopAvailability;
   featured?: boolean;
+  newArrival?: boolean;
   sort?: ShopSort;
 }
 
@@ -166,6 +168,7 @@ export async function searchShopProducts(params: ShopSearchParams = {}): Promise
   if (params.maxPrice !== undefined) query.set("maxPrice", String(params.maxPrice));
   if (params.availability) query.set("availability", params.availability);
   if (params.featured !== undefined) query.set("featured", String(params.featured));
+  if (params.newArrival !== undefined) query.set("newArrival", String(params.newArrival));
   if (params.sort) query.set("sort", params.sort);
 
   const envelope = await requestEnvelope<ShopProductSummary[]>(`/shop/products?${query.toString()}`);
